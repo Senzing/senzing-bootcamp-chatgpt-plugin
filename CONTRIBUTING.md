@@ -37,6 +37,7 @@ The license agreement for this repository is stated in the [LICENSE] file.
 Please do not use the GitHub issue tracker to submit questions.
 
 Instead, email <support@senzing.com>.
+For open discussions, use GitHub's [Discussions].
 
 ## Feature Requests
 
@@ -60,47 +61,16 @@ Choose "Bug report".
 To contribute code or documentation to the repository, you must have [License Agreements] in place.
 This needs to be complete before a [Pull Request] can be accepted.
 
-### This repository is generated, not hand-authored
-
-⛔ **Read this before editing anything under `senzing-bootcamp/`.**
-
-The Power at [`senzing-bootcamp/`](senzing-bootcamp) is **build output.** It is produced
-from the upstream Senzing bootcamp template release by a transformation contract,
-and [`senzing-bootcamp/.build-manifest.json`](senzing-bootcamp/.build-manifest.json)
-records the release it came from plus a SHA-256 for every file in the tree.
-
-Each entry in that manifest carries an `owner`:
-
-| `owner`    | Where the content is authored                                     |
-| ---------- | ----------------------------------------------------------------- |
-| `template` | The upstream template release. Ported by a contract rule.         |
-| `kiro`     | Kiro-specific, no template source. Authored in the build tooling. |
-
-Hand-editing a file in this tree makes the build and this repository disagree, and
-the next rebuild silently reverts your change. The `Validate power` workflow fails
-on exactly that condition: it recomputes every SHA-256 in the manifest and reports
-any file whose content no longer matches.
-
-So a fix to Power content belongs upstream:
-
-- Content that came from the template (`owner: template`) is fixed in the template
-  release, or in the transformation contract that ports it.
-- Kiro-specific content (`owner: kiro`) is fixed in the build tooling that authors it.
-
-If you have made a deliberate, reviewed change to the tree anyway, recompute the
-manifest hashes in the same commit so the tree stays self-describing, and say in
-the pull request why the change could not be made upstream.
-
 ### Setting up a development environment
 
-#### Set environment variables
+#### Set Environment variables
 
 These variables may be modified, but do not need to be modified.
 The variables are used throughout the installation procedure.
 
 ```console
-export GIT_ACCOUNT=Senzing
-export GIT_REPOSITORY=senzing-bootcamp-kiro-power
+export GIT_ACCOUNT=senzing-garage
+export GIT_REPOSITORY=senzing-bootcamp-chatgpt-plugin
 ```
 
 Synthesize environment variables.
@@ -122,39 +92,9 @@ git clone ${GIT_REPOSITORY_URL}
 cd ${GIT_REPOSITORY_DIR}
 ```
 
+### Coding conventions
+
 ### Testing
-
-The same checks CI runs are runnable locally, and they need no Senzing install and
-no MCP server:
-
-```console
-python3 .github/tools/validate_power.py senzing-bootcamp
-```
-
-It reports, and fails on:
-
-1. `plugin.json` and `mcp.json` against the [Agent Plugins] v1.0.0 schemas.
-1. Every `skills/*/` directory has a `SKILL.md` whose frontmatter `name` matches
-   the directory name.
-1. Every `.build-manifest.json` entry still matches the file on disk, and no file
-   in the tree is missing from the manifest.
-1. Every `${PLUGIN_ROOT}/…` path referenced by the shipped content resolves to a
-   file that exists.
-1. Every shipped Python script compiles.
-
-Add `--json` for the same answer as data.
-
-### Locally testing a change to the Power
-
-Install the tree from disk rather than from GitHub, so you are testing your working
-copy:
-
-1. In Kiro's left-hand icon bar, click the **Powers** icon.
-1. Under **Installed**, click **Add Custom Power**.
-1. Select **Import power from a folder** and choose the `senzing-bootcamp/`
-   directory of your clone.
-
-Then start a session in an empty directory and say "start the bootcamp".
 
 ### Pull Requests
 
@@ -164,14 +104,14 @@ Follow GitHub's [Creating a pull request from a branch] or
 
 Accepting pull requests will be at the discretion of Senzing, Inc. and the repository owner(s).
 
-[Agent Plugins]: https://agent-plugins.org/
-[already been reported]: https://github.com/search?q=+is%3Aissue+user%3ASenzing
+[already been reported]: https://github.com/search?q=+is%3Aissue+user%3Asenzing
 [Asking questions]: #questions
 [Code of Conduct]: CODE_OF_CONDUCT.md
 [Contributing code or documentation]: #contributing-code-or-documentation
 [Corporate Contributor License Agreement (CCLA)]: .github/senzing-corporate-contributor-license-agreement.pdf
 [Creating a pull request from a branch]: https://help.github.com/articles/creating-a-pull-request/
 [Creating a pull request from a fork]: https://help.github.com/articles/creating-a-pull-request-from-a-fork/
+[Discussions]: https://github.com/senzing-garage/template-repository/discussions
 [GitHub issue]: https://help.github.com/articles/creating-an-issue/
 [Individual Contributor License Agreement (ICLA)]: .github/senzing-individual-contributor-license-agreement.pdf
 [License Agreements]: #license-agreements

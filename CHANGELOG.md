@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Repository infrastructure aligned with `senzing-bootcamp-claude-plugin` and
-  `senzing-bootcamp-kiro-power`: GitHub Actions workflows, Dependabot, linter and
-  spellcheck configuration, `CODEOWNERS`, contributor license agreements, and
-  contribution guidelines.
+- Repository infrastructure: GitHub Actions workflows, Dependabot, linter and spellcheck
+  configuration, and `CODEOWNERS`, matching `senzing-bootcamp-kiro-power` (which tracks the
+  `senzing-garage/template-python` workflow set).
+- Community health files from `senzing-garage/template-python`: `CONTRIBUTING.md`,
+  `CODE_OF_CONDUCT.md`, `SECURITY.md`, and the contributor license agreements.
