@@ -1,0 +1,22 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "bootcamp",
+    "CCLA",
+    "claude",
+    "CODEOWNER",
+    "cooldown",
+    "frontmatter",
+    "ICLA",
+    "kernelsam",
+    "kiro",
+    "pycache",
+    "SENZING",
+    "Senzing"
+  ],
+  "ignorePaths": [
+    ".git/**",
+    "**/vendor/**"
+  ]
+}
