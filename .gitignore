@@ -1,0 +1,12 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# OS / editor cruft
+.DS_Store
+*.swp
+.idea/
+.vscode/*
+# ...but keep the shared cspell dictionary (used by the spellcheck workflow)
+!.vscode/cspell.json
+.history

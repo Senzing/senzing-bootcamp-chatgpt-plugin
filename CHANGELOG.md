@@ -1,0 +1,18 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+[markdownlint](https://dlaa.me/markdownlint/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+
+- Repository infrastructure: GitHub Actions workflows, Dependabot, linter and spellcheck
+  configuration, and `CODEOWNERS`, matching `senzing-bootcamp-kiro-power` (which tracks the
+  `senzing-garage/template-python` workflow set).
+- Community health files from `senzing-garage/template-python`, adapted to the `Senzing`
+  organization: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, and the contributor license
+  agreements.
