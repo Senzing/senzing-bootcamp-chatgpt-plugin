@@ -5,10 +5,6 @@ packaged as a ChatGPT plugin.
 Install it, then say **"start the bootcamp"** to be guided through
 a hands-on, module-by-module tutorial.
 
-The bootcamp follows a Socratic turn cycle: it asks one defined question, waits for the
-bootcamper's answer, processes that answer while showing concise working updates, and continues
-until it reaches the next defined question. It never pauses on an ordinary status update.
-
 ## What the bootcamp covers
 
 A guided sequence of hands-on modules takes you from zero
@@ -48,6 +44,11 @@ recap PDF you can keep and share, and a production starter. See
 1. [Install Codex]
 
 1. Open the Codex desktop app.
+   Example:
+
+   ```console
+   chatgpt
+   ```
 
 1. Configure Codex.
    This is to allow HTTP servers during the Bootcamp.
@@ -73,18 +74,14 @@ recap PDF you can keep and share, and a production starter. See
     1. In Codex's left-hand navigation bar, click on **Plugins**.
     1. In the **Plugins** panel, in the upper-right, click on "Add", then "Add a marketplace".
     1. In the **Add plugin marketplace** dialog:
-        1. *Source:* https://github.com/Senzing/senzing-bootcamp-chatgpt-plugin
+        1. *Source:* <https://github.com/Senzing/senzing-bootcamp-chatgpt-plugin>
         1. Click "Add marketplace".
-    1. In the **Plugins** panel, choose the "Senzing" marketplace.
-    1. Select "Senzing Bootcamp"
+    1. In the **Plugins** panel, choose the "Personal" tab.
+    1. In the **Plugins** panel, "Personal" tab, click "Senzing Bootcamp".
     1. In the **Senzing Bootcamp** panel, click "Install plugin".
-    1. Review and trust the bundled lifecycle hooks. These hooks keep terse answers such as `yes`
-       or `3` inside the active bootcamp module and prevent a turn from ending without its next
-       question. Without hook trust, the curriculum remains available but the Socratic turn-cycle
-       guarantee is not active.
     1. In the **Senzing Bootcamp** panel, click "Try now".
 
-1. In Codex's agentic chat, enter the following to begin the bootcamp:
+1. With the "Senzing Bootcamp" project selected, in Codex's agentic chat, enter the following to begin the bootcamp:
 
     ```console
     Start the Senzing Bootcamp
