@@ -1,0 +1,238 @@
+<!doctype html>
+<!--
+  Source of the install steps: README.md ("Requirements" and "Install and start").
+  When you change those steps in README.md, update this page to match.
+  Differences from README.md are deliberate: configuration comes before opening the app,
+  step 3 shows no launcher command, and the model tip adds the per-module suggestion.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Senzing Bootcamp for ChatGPT</title>
+    <meta name="description" content="Install the Senzing Bootcamp plugin in the Codex desktop app and start the bootcamp: from nothing installed to a running bootcamp in seven steps.">
+    <link rel="canonical" href="https://hub.senzing.com/senzing-bootcamp-chatgpt-plugin/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Senzing Bootcamp for ChatGPT">
+    <meta property="og:description" content="From nothing installed to a running Senzing Bootcamp in the Codex desktop app, in seven steps.">
+    <meta property="og:url" content="https://hub.senzing.com/senzing-bootcamp-chatgpt-plugin/">
+    <meta name="theme-color" content="#0F0D0C">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800&amp;family=Roboto+Mono:wght@400;500&amp;display=swap">
+    <link rel="stylesheet" href="index.css">
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="nav">
+      <div class="wrap nav__inner">
+        <a class="brand" href="#top" aria-label="Senzing Bootcamp for ChatGPT, back to top">
+          <img class="brand__mark" src="images/senzing-logo.png" alt="" width="32" height="32">
+          <span class="brand__word">SENZING</span>
+        </a>
+        <nav aria-label="Site">
+          <ul class="nav__links">
+            <li><a class="nav__cta" href="https://hub.senzing.com/bootcamp/">All bootcamps</a></li>
+            <li><a href="https://github.com/Senzing/senzing-bootcamp-chatgpt-plugin">GitHub</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero dark" id="top" aria-labelledby="hero-title">
+        <div class="wrap hero__inner">
+          <div>
+            <p class="label">Senzing Agentic AI Bootcamp</p>
+            <h1 id="hero-title">Senzing Bootcamp for <span class="grad">ChatGPT</span></h1>
+            <p class="lead">From nothing installed to a running bootcamp, in seven steps.</p>
+            <p class="hero__note">The ChatGPT bootcamp runs in the <strong>Codex desktop app</strong> from OpenAI, not in the ChatGPT chat window. Install the plugin in Codex.</p>
+            <div class="actions">
+              <a class="btn btn--primary" href="#install">Get started</a>
+            </div>
+            <p class="hero__more"><a href="https://hub.senzing.com/bootcamp/">New to the bootcamp? Start at hub.senzing.com/bootcamp</a></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="light white" id="before" aria-labelledby="before-title">
+        <div class="wrap">
+          <p class="label">Before you start</p>
+          <h2 id="before-title">What you need</h2>
+          <ul class="checklist">
+            <li><strong>A <a href="https://chatgpt.com/pricing/">ChatGPT Pro</a> plan.</strong> A <a href="https://chatgpt.com/pricing/">ChatGPT Plus</a> plan also works, across several 5-hour windows, but not in one session.</li>
+            <li><strong>Network access to the <a href="https://mcp.senzing.com/mcp">Senzing MCP server</a></strong> (<code>https://mcp.senzing.com/mcp</code>). The bootcamp cannot proceed without it. On a corporate network or VPN, ask for the domain <code>mcp.senzing.com</code> to be allowed.</li>
+            <li><strong>A new, empty folder</strong> for the bootcamp.</li>
+            <li><span class="tag">Recommended</span> <strong>A business problem and 5,000 to 20,000 records.</strong> A problem that needs entity resolution, and records that illustrate it. Recommended, not mandatory.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="light offwhite" id="install" aria-labelledby="install-title">
+        <div class="wrap">
+          <p class="label">Install and start</p>
+          <h2 id="install-title">Seven steps to a running bootcamp</h2>
+          <ol class="steps">
+            <li id="step-1">
+              <h3>Install Codex</h3>
+              <p>Download and install Codex from <a href="https://chatgpt.com/codex/">chatgpt.com/codex</a>.</p>
+            </li>
+            <li id="step-2">
+              <h3>Configure Codex</h3>
+              <p>Add this block to <code>~/.codex/config.toml</code>. Create the file if it does not exist.</p>
+              <div class="cmd">
+                <p class="cmd__label">~/.codex/config.toml</p>
+                <pre><code>[experimental_network]
+enabled = true
+allow_local_binding = true</code></pre>
+              </div>
+              <p>The bootcamp runs local web servers for its visualizations, and this setting allows them.</p>
+            </li>
+            <li id="step-3">
+              <h3>Open the Codex desktop app</h3>
+              <p>Open the Codex desktop app you installed in step 1.</p>
+            </li>
+            <li id="step-4">
+              <h3>Select model and effort</h3>
+              <p>In the lower right of Codex:</p>
+              <ol class="substeps">
+                <li>Choose the model <strong>GPT-5.6 Terra</strong>.</li>
+                <li>Choose the effort <strong>Medium</strong>.</li>
+              </ol>
+            </li>
+            <li id="step-5">
+              <h3>Create a project</h3>
+              <ol class="substeps">
+                <li>In the left-hand navigation bar, to the right of <strong>Projects</strong>, click <strong>+</strong>.</li>
+                <li>In the <strong>Create project</strong> dialog, for the project name, enter <code>Senzing Bootcamp</code>.</li>
+                <li>For the source folder, choose your new, empty folder.</li>
+                <li>Click <strong>Create project</strong>.</li>
+              </ol>
+            </li>
+            <li id="step-6">
+              <h3>Install the plugin</h3>
+              <ol class="substeps">
+                <li>In the left-hand navigation bar, click <strong>Plugins</strong>.</li>
+                <li>In the upper right of the <strong>Plugins</strong> panel, click <strong>Add</strong>.</li>
+                <li>Click <strong>Add a marketplace</strong>.</li>
+                <li>In the <strong>Add plugin marketplace</strong> dialog, for <strong>Source</strong>, enter <code>https://github.com/Senzing/senzing-bootcamp-chatgpt-plugin</code>.</li>
+                <li>Click <strong>Add marketplace</strong>.</li>
+                <li>In the <strong>Plugins</strong> panel, choose the <strong>Personal</strong> tab.</li>
+                <li>Click <strong>Senzing Bootcamp</strong>.</li>
+                <li>In the <strong>Senzing Bootcamp</strong> panel, click <strong>Install plugin</strong>.</li>
+                <li>Click <strong>Try now</strong>.</li>
+              </ol>
+            </li>
+            <li id="step-7">
+              <h3>Start the bootcamp</h3>
+              <p>With the <strong>Senzing Bootcamp</strong> project selected, enter this in Codex’s agentic chat:</p>
+              <div class="cmd">
+                <p class="cmd__label">Codex agentic chat</p>
+                <pre><code>Start the Senzing Bootcamp</code></pre>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="light white" id="next" aria-labelledby="next-title">
+        <div class="wrap">
+          <p class="label">What happens next</p>
+          <h2 id="next-title">The bootcamp takes it from here</h2>
+          <p class="intro">The bootcamp first asks you to choose your curriculum, level of detail, and programming language. Then it guides you through the bootcamp, module by module. <a href="https://hub.senzing.com/bootcamp/">See every module</a>.</p>
+        </div>
+      </section>
+
+      <section class="light offwhite" id="tips" aria-labelledby="tips-title">
+        <div class="wrap">
+          <p class="label">Tips</p>
+          <h2 id="tips-title">Get the most from the bootcamp</h2>
+          <div class="callout">
+            <h3>Model and effort</h3>
+            <p>GPT-5.6 Terra at Medium, as set in <a href="#step-4">step 4</a>. At the start of each module the bootcamp may suggest a different model or effort. Change it with the controls in the lower right.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="closing dark" id="other" aria-labelledby="other-title">
+        <div class="wrap">
+          <p class="label">Other platforms</p>
+          <h2 id="other-title">Using a different AI assistant?</h2>
+          <p class="lead">The same bootcamp runs in Claude and Kiro.</p>
+          <div class="actions">
+            <a class="btn btn--outline" href="https://hub.senzing.com/senzing-bootcamp-claude-plugin/">Claude</a>
+            <a class="btn btn--outline" href="https://hub.senzing.com/senzing-bootcamp-kiro-power/">Kiro</a>
+            <a class="btn btn--outline" href="https://hub.senzing.com/bootcamp/">All bootcamps</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer dark">
+      <div class="wrap footer__inner">
+        <p class="brand">
+          <img class="brand__mark" src="images/senzing-logo.png" alt="Senzing logo" width="32" height="32">
+          <span class="brand__word">SENZING</span>
+        </p>
+        <p>Senzing Agentic AI Bootcamp · © 2026 Senzing, Inc.</p>
+        <p class="footer__links">
+          <a href="https://github.com/Senzing/senzing-bootcamp-chatgpt-plugin">GitHub</a>
+          <a href="https://hub.senzing.com/bootcamp/">All bootcamps</a>
+          <a href="#top">Back to top</a>
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // Progressive enhancement: add a Copy button to each command block.
+      (function () {
+        var blocks = document.querySelectorAll(".cmd");
+        Array.prototype.forEach.call(blocks, function (block) {
+          var code = block.querySelector("code");
+          var button = document.createElement("button");
+          var timer;
+          button.type = "button";
+          button.className = "cmd__copy";
+          button.textContent = "Copy";
+          button.setAttribute("aria-live", "polite");
+
+          function show(label) {
+            button.textContent = label;
+            clearTimeout(timer);
+            timer = setTimeout(function () {
+              button.textContent = "Copy";
+            }, 2000);
+          }
+
+          function fail() {
+            show("Copy failed");
+            try {
+              var range = document.createRange();
+              var selection = window.getSelection();
+              range.selectNodeContents(code);
+              selection.removeAllRanges();
+              selection.addRange(range);
+            } catch (e) {
+              // Selection is best effort; the text can still be selected by hand.
+            }
+          }
+
+          button.addEventListener("click", function () {
+            try {
+              navigator.clipboard.writeText(code.textContent).then(function () {
+                show("Copied");
+              }, fail);
+            } catch (e) {
+              fail();
+            }
+          });
+
+          block.appendChild(button);
+        });
+      })();
+    </script>
+  </body>
+</html>
