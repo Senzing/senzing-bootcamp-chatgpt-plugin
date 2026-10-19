@@ -34,6 +34,12 @@ same rule. This is the settled reading of INV-016 (whose own examples — "to pr
 your request", "to review what you said" — are purposes), resolving the earlier
 ambiguity between the purpose-phrasing and emitted-message readings.
 
+## Native Codex edit safety
+
+Codex sends native `apply_patch` edits as `tool_input.command`, including every add, update, delete, and move path. `Write|Edit` matches that tool through Codex aliases; it does not change the payload into `file_path`. The Codex-owned `write-gate.py` overlay checks every affected target against the resolved project directory, including symlink escapes, and blocks malformed or unsupported edit input explicitly. Legacy `Write`/`Edit` payloads with `tool_input.file_path` remain supported. The existing secret-pattern scan applies to both forms.
+
+This hook is a guardrail for matched edits, not a replacement for host sandbox permissions or a complete shell/MCP write boundary. Direct-script tests do not establish that the host fired the trusted hook; verify actual native edits in the release's Codex-host dry run.
+
 ## Runtime prerequisites (per platform)
 
 The hooks are **Python 3** scripts, invoked as `type: command` hooks whose `command`
@@ -62,6 +68,10 @@ INV-090), so any machine that can run the bootcamp can run the hooks.
 
 Codex substitutes `${PLUGIN_ROOT}` in each hook command on all three platforms. Keep it quoted inside the `command` string:
 the expanded path can contain a space, and unquoted it would split into two arguments.
+
+## Automatic continuation scope
+
+The Codex controller, Stop hook, and automatic SessionStart resume share `scripts/bootcamp_state.py`: they require a valid progress object with a nonblank string `current_module` and stand down when the top-level `bootcamp_complete` preference is true. Missing, empty, malformed, non-object, and unrecorded progress do not invent an active module. The controller is still invoked on every prompt; invocation alone does not force bootcamp instructions into an inactive task. Explicit start/resume remains available through the `start-bootcamp` entry skill, with a fresh directory required for a separately requested new run after completion. These guards do not rewrite progress or preferences. Other hooks retain their documented write-safety, feedback, and recap-durability behavior.
 
 ## Design notes
 
