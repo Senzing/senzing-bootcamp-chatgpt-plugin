@@ -484,17 +484,23 @@ virtual entities — two groups of records that no resolution step joined. The s
 and the stats all passed them. That observation is **observation-only** (INV-080/INV-149): it says
 what one run returned, not what the flag means.
 
-1. **Take every entity with 2 or more records from the export already read** in the match-key
-   audit's step 1 — an entity whose `RESOLVED_ENTITY.RECORDS[]` has two or more elements. **No
-   sampling.** Call that total **M**. One `how_entity` call per entity, through generated SDK code
-   (never direct SQL against `database/G2C.db`).
+1. **Build the population of entities with 2 or more records from the export already read** in
+   the match-key audit's step 1 — an entity whose `RESOLVED_ENTITY.RECORDS[]` has two or more
+   elements.
+   Call that population **M**. Audit all of them when M is at most 500. When M is larger, sort by
+   entity ID and take a deterministic, evenly spaced sample of **S = 500**, including the first and
+   last IDs; record both S and M so the result cannot be mistaken for a full-population audit. One
+   `how_entity` call per selected entity, through generated SDK code (never direct SQL against
+   `database/G2C.db`). This bound keeps the validation step predictable on large loads while still
+   covering the whole ID range.
 2. **Take the method name, argument type and flag spelling from `get_sdk_reference` for the
    Bootcamper's binding** — `get_sdk_reference(topic='parameters', filter='how_entity',
    language='<chosen_language>')`. The name differs per binding (the response's own `warnings`
    say so: `how_entity_by_entity_id` in Python, `howEntity` in Java, `HowEntity` in C#), so never
    copy one binding's name into another. Use the method's default flags.
 3. ⛔ **(INV-115) Dump ONE `how_entity` response and read where `FINAL_STATE` sits before
-   parsing all M of them.** `get_sdk_reference(topic='response_schemas', filter='how_entity_by_entity_id')`
+   parsing the selected responses.** Use
+   `get_sdk_reference(topic='response_schemas', filter='how_entity_by_entity_id')`, which
    documents `HOW_RESULTS.FINAL_STATE.NEED_REEVALUATION` (integer) and
    `HOW_RESULTS.FINAL_STATE.VIRTUAL_ENTITIES[]` (array), with no `requires_flags` on either. The
    flags route's `SZ_HOW_ENTITY_DEFAULT_FLAGS` entry lists only `HOW_RESULTS.RESOLUTION_STEPS[]` as
@@ -507,24 +513,29 @@ what one run returned, not what the flag means.
    non-zero, or `VIRTUAL_ENTITIES[]` with more than one element. One sign alone is enough. No route
    documents whether the two always go together, so record each entity's sign or signs rather than
    inferring one from the other.
-5. **Report "checked N of M"** — N is the number of entities whose `how_entity` call completed and
-   whose response carried `FINAL_STATE`. A failed call does not abort the audit; count it as not
-   checked and continue with the rest.
+5. **Report progress every 50 calls and a final coverage statement.** N is the number of entities
+   whose `how_entity` call completed and whose response carried `FINAL_STATE`. For a full audit,
+   report "checked N of M". For a sampled audit, report "checked N of S sampled from M". A failed
+   call does not abort the audit; count it as not checked and continue with the rest.
 6. **The meaning of `NEED_REEVALUATION` is not documented, so the audit reports and offers no fix.**
    It does not suggest a re-evaluation call, a reload, or any other remedy, and it claims nothing
    about what set the flag or what would clear it. The Bootcamper hears the finding; what to do
    about it waits on a Senzing route that documents it.
    <!-- MCP-NEGATIVE: search_docs(query='NEED_REEVALUATION how entity final state') and search_docs(query='reevaluate entity when to call reevaluation needed') — no indexed document defines HOW_RESULTS.FINAL_STATE.NEED_REEVALUATION or says what sets or clears it; the first query reaches the field only inside the how-flags page's example payload, which shows "NEED_REEVALUATION": 0, and the second returns re-evaluation code snippets, flag constants and a config-change FAQ, none naming the field — owner: get_sdk_reference(topic='response_schemas', filter='how_entity_by_entity_id') IS the route that would carry a field description, and it lists NEED_REEVALUATION as an integer with no description; search_docs is the prose owner, and both were asked (absence negative, INV-194) — server 1.37.13, 2026-09-27 -->
 
-**Four outcomes — the match-key audit's three, plus one for an empty population. State which one
-applies:**
+**Five outcomes — the match-key audit's three, plus sampled-clean and empty-population outcomes.
+State which one applies:**
 
 - **Finding** — name each unsettled entity (entity ID and its leading name) and the sign or signs it
-  showed, with "checked N of M".
-- **No finding** — every one of the M entities was checked and none showed either sign.
+  showed, with the applicable full or sampled coverage statement.
+- **No finding** — every one of the M entities was checked and none showed either sign. This
+  label is reserved for M at most 500.
   ⛔ **(INV-163) Never report "no finding" unless N equals M** — "none unsettled among those checked"
   and "none unsettled" read identically, and only the second is a clean result: an entity whose
   response never arrived is not an entity with nothing to report.
+- **No finding in sample** — M is greater than 500, all S selected entities were checked, and
+  none showed either sign. Always say "checked S of S sampled from M"; never shorten this to
+  "no finding", because the unselected population was not measured.
 - **Nothing to check** — M is 0: the export holds no entity with 2 or more records. Report
   "checked 0 of 0" and **nothing to check**. ⛔ **(INV-265) With M = 0 the outcome is never "no finding"** —
   the audit's input is empty, and "no finding" is its clean result. A reader that parses
@@ -545,7 +556,8 @@ applies:**
   reports records but exports no entities is a reader or flag problem, not an empty population.
 - **Could not measure** — some or all calls did not complete, or their responses carried no
   `FINAL_STATE`, or M is 0 and a **nothing to check** condition failed. Say how many were not
-  checked ("checked N of M"), and still report any finding among the N that were.
+  checked with the applicable full or sampled coverage statement, and still report any finding
+  among the N that were.
   ⛔ **Never collapse a partial run into "no finding" (INV-163).**
 
 ⛔ **The outcome never blocks (INV-117, INV-264)** — it is carried into the decision gate below as a
@@ -553,8 +565,8 @@ finding, exactly as the match-key audit's is, and it does not by itself choose t
 **nothing to check** does not move the gate either.
 
 **Record it in `docs/results_validation.md`**, which step 28 already wrote (steps 26–27 as well,
-on the multi-source path). Append a `## How-state audit` section carrying the outcome, "checked N
-of M", and the count of unsettled entities —
+on the multi-source path). Append a `## How-state audit` section carrying the outcome, the
+applicable full or sampled coverage statement, and the count of unsettled entities —
 ⛔ **(INV-265) including zero: write "0 unsettled" rather than omitting the section**, since an
 absent section and a clean result would otherwise read alike — then list each flagged entity with
 its sign or signs. That rule is for **no finding**. For **nothing to check**, still write the
@@ -599,7 +611,8 @@ State which of the audit's three outcomes applies; do **not** collapse the third
   third finding that routes, not a new blocker.
 
 **Present the how-state audit's outcome beside the match-key audit's**, as its own line — finding,
-no finding, nothing to check, or could not measure, with "checked N of M". A finding names the unsettled entities
+no finding, no finding in sample, nothing to check, or could not measure, with the applicable
+coverage statement. A finding names the unsettled entities
 and says their record counts are unconfirmed; it is reported on every branch below and does not
 move the gate to a different branch (INV-117, INV-264), because no documented remedy exists to
 iterate toward.

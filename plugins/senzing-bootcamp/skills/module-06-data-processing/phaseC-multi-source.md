@@ -115,6 +115,11 @@ remaining sources and present their recommended load order with reasons for the 
 review. If no choice is recorded, the first source is the one whose `load_status` is `loaded`:
 present it as already loaded and name no heuristic, because none was recorded.
 
+If no first-source choice is recorded **and no source has `load_status: loaded`**, do not present a
+failed or unattempted source as already loaded. Stop this phase, report that the first load did not
+complete, and return to Phase B's failed-load recovery. Step 14 orders remaining sources only after
+one source is confirmed loaded.
+
 If step 13 recorded a dependency the first choice broke (a source that should have loaded before
 it), say so plainly, record it in `docs/loading_strategy.md` beside the first-source choice, and
 order the remaining sources to honor it.

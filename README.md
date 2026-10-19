@@ -37,6 +37,9 @@ recap PDF you can keep and share, and a production starter. See
   It generates SDK code,
   looks up Senzing facts,
   and provides working examples.
+- Python 3, available as `python3` on the `PATH`.
+  The bootcamp's hooks and graduation recap use it.
+  On Windows, if only `python` or `py` is installed, add a `python3` entry to the `PATH`.
 - Minimum of a [ChatGPT Pro] plan.
   - *Note:* Multiple 5-hour windows of a [ChatGPT Plus] plan will work, but you will not be able to complete the bootcamp in one session.
 - *Recommended, but not mandatory:*
@@ -63,7 +66,7 @@ recap PDF you can keep and share, and a production starter. See
     1. In Codex's left-hand navigation bar, click on **Plugins**.
     1. In the **Plugins** panel, in the upper-right, click on "Add", then "Add a marketplace".
     1. In the **Add plugin marketplace** dialog:
-        1. *Source:* https://github.com/Senzing/senzing-bootcamp-chatgpt-plugin
+        1. *Source:* <https://github.com/Senzing/senzing-bootcamp-chatgpt-plugin>
         1. Click "Add marketplace".
     1. In the **Plugins** panel, choose the "Senzing" marketplace.
     1. Select "Senzing Bootcamp"

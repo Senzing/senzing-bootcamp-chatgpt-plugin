@@ -1580,7 +1580,9 @@ Handling (INV-284): a proceed answer ("Yes, proceed to loading", "Proceed to loa
 If issues are found, go back to the relevant step. Retest after changes.
 
 > **Data source registry:** Update the source's `mapping_status` to `complete` in
-> `config/data_sources.yaml` and set `updated_at`.
+> `config/data_sources.yaml` and set `updated_at`. When this is the receiving
+> `quality_iteration` branch, also set `fast_pathed: false`: the source now has a mapped output,
+> so Module 6 must reload that output instead of the original fast-path input.
 
 **Checkpoint:** write step 17.
 

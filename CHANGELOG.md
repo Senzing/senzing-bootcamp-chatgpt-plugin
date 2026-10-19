@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [markdownlint](https://dlaa.me/markdownlint/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-10-19
+
+### Added
+
+- A narrated recap-video generator, expanded validation guidance, and resumable quality-iteration
+  routes across mapping, loading, and discovery.
+- Shared active-bootcamp state for the controller, Stop hook, and SessionStart hook.
+
+### Changed
+
+- Updated the guided curriculum, installation instructions, model guidance, visualization server,
+  packaging flow, and example recap for the 0.6.1 release.
+- Bounded the how-state audit on large entity populations while preserving deterministic coverage
+  and explicit sampled-result reporting.
+
+### Fixed
+
+- Preserved ISO dates and numeric ranges in recap narration, cleared fast-path state after a
+  quality-iteration remap, accepted valid no-final-newline patch markers, and made failed video
+  render cleanup remove every empty output directory it created.
+
 ## [0.5.3] - 2026-09-21
 
 The first release of the Senzing Bootcamp ChatGPT plugin, built from

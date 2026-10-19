@@ -195,9 +195,6 @@ CAPTION_MAX_WIDTH = 1560
 CAPTION_LINES = 2
 CAPTION_BOTTOM = HEIGHT - 44
 
-#: Modules whose import would mean a network fetch. The renderer imports none of them.
-NETWORK_MODULES = ("urllib", "http", "socket", "requests", "ftplib", "smtplib")
-
 #: The default Piper voice (#341). The default ``--voice-model`` path is built from it.
 #: License record (from #341; the model card was read 2026-10-01):
 #:   - the voice: ``en_US-ljspeech-high``, trained from scratch on the LJ Speech dataset, which
@@ -771,9 +768,10 @@ _SCALES = ((10 ** 12, "trillion"), (10 ** 9, "billion"), (10 ** 6, "million"),
 
 #: A free-standing number: an integer, with or without thousands separators, and an optional
 #: decimal part. Digits joined to a letter or underscore (``CORD2``, ``v4``, ``4th``) are not
-#: matched, nor is a run of digits glued to another by ``.`` or ``,`` that is not a number.
-_NUMBER = re.compile(r"(?<![\w.,])([0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)(?:\.([0-9]+))?"
-                     r"(?![\w]|[.,][0-9])")
+#: matched, nor is a run of digits glued to another by ``.``, ``,`` or ``-``. Excluding the
+#: hyphen keeps ISO dates and numeric ranges intact instead of speaking only part of them.
+_NUMBER = re.compile(r"(?<![\w.,-])([0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)(?:\.([0-9]+))?"
+                     r"(?![\w-]|[.,][0-9])")
 
 
 def _integer_words(n: int) -> str:
@@ -797,9 +795,9 @@ def spell_numbers(text: str) -> str:
     """`text` with each free-standing number written in English words, for Piper only.
 
     ``10,000`` -> ``ten thousand``; ``3.5`` -> ``three point five`` (the digits after the point
-    are read one by one). Digits joined to letters (``CORD2``, ``v4``) are left as they are, as
-    is a number of a quadrillion or more. Standard library only; the captions and the
-    platform engines never see this text.
+    are read one by one). Digits joined to letters (``CORD2``, ``v4``) or hyphens
+    (``2026-09-30``, ``3-5``) are left as they are, as is a number of a quadrillion or more.
+    Standard library only; the captions and the platform engines never see this text.
     """
     def words(match: "re.Match") -> str:
         whole = int(match.group(1).replace(",", ""))
@@ -1979,7 +1977,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     with_music = storyboard["video"].get("music", True)
     output = Path(args.output)
     partial = output.with_name(f".{output.name}.partial")
-    created_dir = None if output.parent.exists() else output.parent
+    created_dirs = []
+    candidate = output.parent
+    while not candidate.exists():
+        created_dirs.append(candidate)
+        candidate = candidate.parent
     ok, detail = False, ""
     with tempfile.TemporaryDirectory(prefix="sbcp-video-") as tmp:
         workdir = Path(tmp)
@@ -2017,11 +2019,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         finally:
             if partial.exists():
                 partial.unlink()
-            if created_dir is not None and not output.exists():
-                try:
-                    created_dir.rmdir()
-                except OSError:
-                    pass
+            if not output.exists():
+                for created_dir in created_dirs:
+                    try:
+                        created_dir.rmdir()
+                    except OSError:
+                        break
     if not ok:
         _report("ERROR", f"the video could not be rendered ({detail}); no video written.")
         return EXIT_RENDER_FAILED

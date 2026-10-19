@@ -1645,7 +1645,9 @@ function renderHow(data){const hr=(data.result||{}).HOW_RESULTS||{};const steps=
   // Unsettled with no steps: each virtual entity is its own group. Pooling them is what
   // made two groups read as one entity.
   var grouped="";
-  if(unsettled){grouped="<h4>"+ve.length+" virtual entit"+(ve.length===1?"y":"ies")+" in the final state</h4><div class='recs'>";
+  if(unsettled){
+    grouped="<h4>"+ve.length+(ve.length===1?" virtual entity":" virtual entities")+
+      " in the final state</h4><div class='recs'>";
     ve.forEach(function(v,i){var k=0;(v.MEMBER_RECORDS||[]).forEach(function(m){k+=((m.RECORDS||[]).length);});
       grouped+="<div class='rec how-group' style='min-width:auto'><b>Group "+(i+1)+"</b>"+
         (v.VIRTUAL_ENTITY_ID?" · <code>"+esc(String(v.VIRTUAL_ENTITY_ID))+"</code>":"")+

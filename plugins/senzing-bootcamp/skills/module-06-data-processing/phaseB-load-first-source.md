@@ -17,6 +17,11 @@ that heuristic and apply the next one. When Module 5's optional test load ran
 (`test_load_status: complete`), its quality results feed the same heuristics, as Phase A's
 "Phase 3 results integration" already says.
 
+⛔ **This is not a circular runtime dependency.** Phase B computes and records the choice before
+loading; it only reads Step 14's static heuristic definition. Step 14 later consumes the recorded
+choice and orders the remaining sources. It does not choose or retroactively validate the first
+source.
+
 Before step 5, tell the bootcamper in one line which source loads first and the heuristic that
 actually decided it, for example *"Loading `<source>` first: `<the heuristic that decided it>`."*
 ⛔ **This is a statement, not a 👉 question (INV-225).** It asks nothing and does not end the

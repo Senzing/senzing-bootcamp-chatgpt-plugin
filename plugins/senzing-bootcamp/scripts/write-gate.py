@@ -10,10 +10,22 @@ import re
 import sys
 
 
-INVALID_MSG = "Write blocked: malformed or unsupported edit input; no safe target set could be established."
-OUTSIDE_MSG = "Write blocked: that path is outside the Bootcamp project. Use a project-relative path."
-TEMP_MSG = "Write blocked: use a project-relative path, not a system temp or Downloads directory."
-SECRET_MSG = "Write blocked: a possible hardcoded secret was detected. Use environment variables instead."
+INVALID_MSG = (
+    "Write blocked: malformed or unsupported edit input; no safe target set "
+    "could be established."
+)
+OUTSIDE_MSG = (
+    "Write blocked: that path is outside the Bootcamp project. Use a "
+    "project-relative path."
+)
+TEMP_MSG = (
+    "Write blocked: use a project-relative path, not a system temp or "
+    "Downloads directory."
+)
+SECRET_MSG = (
+    "Write blocked: a possible hardcoded secret was detected. Use environment "
+    "variables instead."
+)
 SECRET_PATTERN = (
     r"BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY"
     r"|AKIA[0-9A-Z]{16}"
@@ -29,12 +41,19 @@ def patch_targets(command: str) -> list[str]:
     targets = []
     index = 1
     while index < len(lines) - 1:
-        header = next((prefix for prefix in HEADERS if lines[index].startswith(prefix)), None)
+        header = next(
+            (prefix for prefix in HEADERS if lines[index].startswith(prefix)),
+            None,
+        )
         if header is None:
             raise ValueError(INVALID_MSG)
         targets.append(lines[index][len(header):].strip())
         index += 1
-        if header == "*** Update File: " and index < len(lines) - 1 and lines[index].startswith("*** Move to: "):
+        if (
+            header == "*** Update File: "
+            and index < len(lines) - 1
+            and lines[index].startswith("*** Move to: ")
+        ):
             targets.append(lines[index][len("*** Move to: "):].strip())
             index += 1
         body_start = index
@@ -44,8 +63,11 @@ def patch_targets(command: str) -> list[str]:
                 if not line.startswith("+"):
                     raise ValueError(INVALID_MSG)
             elif header == "*** Update File: ":
-                if not (line == "" or line.startswith((" ", "+", "-", "@@ "))
-                        or line in {"@@", "*** End of File"}):
+                if not (
+                    line == ""
+                    or line.startswith((" ", "+", "-", "@@ "))
+                    or line in {"@@", "*** End of File", r"\ No newline at end of file"}
+                ):
                     raise ValueError(INVALID_MSG)
             else:
                 raise ValueError(INVALID_MSG)
@@ -77,14 +99,21 @@ def edit_targets(payload: dict) -> list[str]:
 def validate_target(target: str, workspace: Path) -> None:
     if any(token in target.upper() for token in ("%TEMP%", "%TMP%")):
         raise ValueError(TEMP_MSG)
-    if os.name != "nt" and (re.match(r"^[A-Za-z]:[\\/]", target) or target.startswith("\\\\")):
+    if os.name != "nt" and (
+        re.match(r"^[A-Za-z]:[\\/]", target) or target.startswith("\\\\")
+    ):
         raise ValueError(OUTSIDE_MSG)
     destination = Path(os.path.expanduser(target)).resolve()
     if destination.is_relative_to(workspace):
         return
     normalized = str(destination).replace("\\", "/").lower()
-    temporary = normalized.startswith(("/tmp/", "/var/tmp/", "/private/tmp/", "/private/var/folders/"))
-    temporary = temporary or any(part in normalized for part in ("/downloads/", "/appdata/local/temp/", "/windows/temp/"))
+    temporary = normalized.startswith(
+        ("/tmp/", "/var/tmp/", "/private/tmp/", "/private/var/folders/")
+    )
+    temporary = temporary or any(
+        part in normalized
+        for part in ("/downloads/", "/appdata/local/temp/", "/windows/temp/")
+    )
     for name in ("TMPDIR", "TEMP", "TMP"):
         value = os.environ.get(name)
         if value and destination.is_relative_to(Path(value).resolve()):
@@ -107,7 +136,8 @@ def main() -> int:
         if re.search(SECRET_PATTERN, raw):
             raise ValueError(SECRET_MSG)
     except (OSError, ValueError, TypeError, RuntimeError) as error:
-        message = str(error) if str(error) in {INVALID_MSG, OUTSIDE_MSG, TEMP_MSG, SECRET_MSG} else INVALID_MSG
+        known_messages = {INVALID_MSG, OUTSIDE_MSG, TEMP_MSG, SECRET_MSG}
+        message = str(error) if str(error) in known_messages else INVALID_MSG
         print(message, file=sys.stderr)
         return 2
     return 0
