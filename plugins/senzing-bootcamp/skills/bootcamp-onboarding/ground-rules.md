@@ -53,7 +53,8 @@ response, perform that document's turn-close audit.
   step presented alone ends a turn with **zero** 👉, and folded in it looks like advancing two
   steps, so the guide must break one rule or the other and learns to read ⛔ as advisory.
   - **A run of them is the same case, not a worse one.** Non-yielding steps often come several in a
-    row — Module 1 Phase 1's 4a/4b/5/5a, SDK setup's 1b/4/5/6 on an existing install,
+    row — Module 1 Phase 1's 4a/4b/5/5a, SDK setup's 3/4/5/6 on an existing install (its Step 3 there
+    being only Phase 3 and the environment script),
     **the whole of System verification**, which contains exactly one 👉 (its module-transition
     question), and **Data collection's generated-scenario path, whose Steps 1-8b ask nothing** (that
     one is path-dependent: the bring-your-own-data path does ask, at Step 2). A faithful turn there
@@ -214,7 +215,7 @@ response, perform that document's turn-close audit.
   MCP server; the internal-channels claim was the guide's own inference about how Senzing employees
   obtain licenses. Their words: *"I don't want assumptions presented as fact."* The sourced and the
   unsourced arrived in one paragraph, indistinguishable.
-- ⛔ **(INV-274, INV-065) The bootcamper's identifying context is for IDENTIFICATION and for fields a tool
+- ⛔ **(INV-274) The bootcamper's identifying context is for IDENTIFICATION and for fields a tool
   requires —
   never a premise for your reasoning about what they should choose.** Their name, email address and
   account details are collected to identify them and to satisfy a call that cannot run without them.
@@ -238,7 +239,7 @@ response, perform that document's turn-close audit.
   the stricter one governs — call the tool.
 - **Tool routing:** attribute names / JSON mappings -> `mapping_workflow`; SDK code ->
   `generate_scaffold` or `sdk_guide`; **method signatures and parameter types** ->
-  `get_sdk_reference` topic `methods` (aliases `functions` / `classes` / `api`), which searches the
+  `get_sdk_reference` topic `parameters`, which searches the
   SDK docs for signatures, parameters and examples — narrow with `filter='<method or class>'`;
   flags **and response structures** ->
   `get_sdk_reference` (topics `flags` and `response_schemas`; narrow with `filter='<method>'`);
@@ -247,17 +248,22 @@ response, perform that document's turn-close audit.
   tool discovery -> `get_capabilities`.
 - ⛔ **Always pass `language` to `reporting_guide` — every call, whatever the topic** (INV-192).
   Most topics withhold their content until it is supplied, answering instead with a **`needs_input`**
-  object naming the parameter they want, while the content arrays in that same reply come back
-  **empty**. ⚠️ **Recognize the gate by `needs_input.parameter` — never by a particular field being
-  empty.** Which arrays a topic carries is the server's to rename, so a list of them here is the
-  same liability as the list of gating topics this rule already refuses to keep. Observed on MCP
+  object naming the parameter they want, and that same reply carries **no content**: the content
+  keys are absent. ⚠️ **Recognize the gate by `needs_input.parameter` — never by a particular field
+  being empty or absent.** Which arrays a topic carries is the server's to rename, so a list of them
+  here is the same liability as the list of gating topics this rule already refuses to keep.
+  Earlier servers returned the content arrays present but empty. Observed on MCP
   server 1.32.9, docs indexed 2026-08-11 20:52 UTC, 2026-08-13: `topic='evaluation'` and
   `topic='graph'` each returned `needs_input.parameter` of `language` with empty `sdk_patterns`,
-  `sql_patterns` and `visualization`, while `topic='dashboard'` returned its content ungated. The
+  `sql_patterns` and `visualization`, while `topic='dashboard'` returned its content ungated.
+  Observed on MCP server 1.37.14, docs indexed 2026-09-28 03:23 UTC, 2026-09-28:
+  `topic='evaluation'` and `topic='export'` each return only `topic` and `needs_input`, while
+  `topic='dashboard'` still returns its content without `language`. The
   parameter is *optional in the schema*, so a call without it looks correct and returns 200 — which
   is the whole trap. Passing it where a topic does not gate costs nothing and only adds content, so
   pass it unconditionally rather than tracking which topics gate: that list is a per-topic fact
   about the server, and the last attempt to keep one went stale within a day.
+  <!-- MCP-NEGATIVE: reporting_guide(topic='evaluation', language=None) and reporting_guide(topic='export', language=None) — each reply carries only the keys topic and needs_input, with no content keys — owner: reporting_guide IS the route that owns its topic's content, and the gated reply's own needs_input.instruction says it contains no Senzing content and asks for a re-call with language, so the absence is the gate itself rather than a gap in the topic (absence negative) — server 1.37.14, 2026-09-28 -->
 - ⛔ **A `needs_input` response is a gate, not an answer.** Satisfy every gate the response asks
   for — some topics gate twice (`topic='data_mart'` asks for `language`, then `scale`) — and
   re-call rather than proceeding on what came back. Never report a topic as having no guidance on
@@ -278,8 +284,12 @@ response, perform that document's turn-close audit.
   the bootcamper an example file is empty on that basis.
   ⛔ **Do not take the `inline` route the response's step 3 describes.** `inline` is still not
   declared in the live `find_examples` schema, and only declared parameters may be passed (INV-136).
-  The server states this itself: *"Clients that validate arguments against the declared schema cannot
-  use this step; prefer fetching raw_url or cloning."*
+  The server states this itself, identically in `find_examples` and `generate_scaffold` (re-verified
+  on MCP server 1.37.14, 2026-09-28): *"Clients that validate arguments against the declared schema
+  cannot send inline=true — the schema will reject it, and steps 1 and 2 (raw_url / git clone) have
+  already failed by the time this step applies, so retrying them will not help either. For such a
+  client there is no route to this GitHub-hosted file through this server; report the content as
+  unreachable rather than retrying."* What to do then is the terminal step stated below.
   (This replaces the earlier reading — through 2026-07-30 on server 1.32.2 the same empty `content`
   arrived with no `content_elided` signal, so it was indistinguishable from a broken retrieval and
   was treated as one. The behavior was documented rather than reverted, so the guidance above is
@@ -293,12 +303,25 @@ response, perform that document's turn-close audit.
   - `find_examples` and `generate_scaffold` — `inline` is **not** declared by either, so passing it
     is a call that cannot work, whatever the response prose advertises. Follow `access_steps`:
     `raw_url`, then clone.
-  - `download_resource` — `inline` **is** declared, alongside `filename`, `filenames` and `version`,
-    and each resource's own `on_failure` names it as the remedy when the URL fetch fails. It is
-    therefore permitted here — after the fetch fails, not instead of it — and it costs context,
-    because the whole resource then arrives inside the response.
+    ⛔ **Once `raw_url` and `git clone` have both failed, report the example as unreachable (INV-160).**
+    This is the terminal step for both `find_examples` and `generate_scaffold` — for example when
+    `raw.githubusercontent.com` is blocked and `git` is unavailable or `github.com` is blocked. Tell
+    the bootcamper which example could not be reached (the file and its repo) and what was tried.
+    Do not retry either step, and do not pass `inline`, which neither schema declares (INV-136).
+    Never reconstruct the file's content from memory or training data (INV-080). The step that
+    needed the example then continues on its own fallback: this adds no question and blocks
+    nothing beyond what that step already does.
+  - `download_resource` — `inline` **is** declared, alongside `filename`, `filenames`, `offset` and
+    `version`, and each resource's own `on_failure` names it as the remedy when the URL fetch fails.
+    It is therefore permitted here — after the fetch fails, not instead of it — and it costs context.
+    **An `inline=true` reply carries the resource in bounded chunks, not in one response** (INV-234):
+    a reply that stops short says `truncated: true` and carries `next_offset` and `total_chars`, the
+    next call passes `offset` set to that `next_offset`, and the last chunk says `truncated: false`.
+    A batch (`filenames`) leaves out a file too large for one chunk and lists it under `oversize`;
+    request that file again on its own, with `filename`. Module 5 Phase 1 Step 3 is the one step
+    that puts a resource back together from chunks, and it states the procedure in full.
 
-  <!-- MCP-NEGATIVE: the declared schemas of find_examples (query, repo, file_path, list_files, language, max_lines) and generate_scaffold (language, version, workflow) — neither declares an inline parameter, while download_resource's schema does declare it — owner: each tool's declared schema as the server advertises it in the tool manifest is the authority on what that tool accepts, and all three were read there directly rather than inferred from response prose or from a sibling tool (routing negative — the schema is the route, the response's own access_steps prose is not) — server 1.36.0, 2026-09-02 -->
+  <!-- MCP-NEGATIVE: the declared schemas of find_examples (query, repo, file_path, list_files, language, max_lines) and generate_scaffold (language, version, workflow) — neither declares an inline parameter, while download_resource's schema (filename, filenames, inline, offset, version) does declare it — owner: each tool's declared schema as the server advertises it in the tool manifest is the authority on what that tool accepts, and all three were read there directly rather than inferred from response prose or from a sibling tool (routing negative — the schema is the route, the response's own access_steps prose is not) — server 1.37.15, 2026-09-29 -->
 
   ⛔ **Read this as a consequence of the schema, never as a ban on the word `inline`.** Stated as
   "never pass `inline`" the rule generalizes wrongly, and a guide that internalized it that way will
@@ -323,9 +346,9 @@ response, perform that document's turn-close audit.
   description's coverage prose is still not normative, and still goes stale on the server's
   schedule rather than the plugin's.
 
-  **The live illustration, same server and date:** `search_docs`' declared description says the
-  corpus is *"~2175 chunks"*, while every `search_docs` response carries
-  `metadata.documents_indexed: 14637`. ⚠️ **Those are not necessarily contradictory — they may
+  **The live illustration, same server and date:** `search_docs`' declared description sizes the
+  corpus in chunks, while every `search_docs` response carries `metadata.documents_indexed`, a
+  different figure. ⚠️ **Those are not necessarily contradictory — they may
   simply be different units** (a chunk need not be a document), and **the tool documents neither**.
   That is the point: a reader cannot tell from the declared prose how large the corpus is, or
   whether the two figures describe the same thing. A coverage figure a caller cannot act on is
@@ -393,16 +416,17 @@ response, perform that document's turn-close audit.
   reporting **0** distinct keys against a true 16, and disclosed links reporting **0** against
   556 — each reached by following the rule above and stopping at the schema.
 - **Parameter shapes, for the bootcamper's binding.** **`get_sdk_reference` answers parameter
-  shapes whenever `filter` names a method — under *any* topic**, not only `topic='methods'`. A
+  shapes whenever `filter` names a method — under *any* topic**, not only `topic='parameters'`. A
   `flags` or `response_schemas` response you already hold therefore carries the signature too,
   in a `method_signatures` block, so it needs no second call. (Verified on MCP server 1.32.2,
   2026-07-30: `topic='flags', filter='find_network_by_entity_id'` returned it alongside the flag
-  data, and `topic='response_schemas', filter='get_version'` returned it alongside an *empty*
-  `data` array — a topic with no data of its own still carries the signature.) When you hold no
-  such response, ask for it directly before **calling** an SDK method:
+  data. Verified on MCP server 1.37.14, 2026-09-28: `topic='response_schemas', filter='get_stats'`
+  returned it alongside an *empty* `data` array — a topic with no data of its own still carries the
+  signature.) When you hold no such response, ask for it directly before **calling** an SDK
+  method:
 
   ```text
-  get_sdk_reference(topic='methods', filter='find_network_by_entity_id')
+  get_sdk_reference(topic='parameters', filter='find_network_by_entity_id')
   ```
 
   returns the binding's own signature —
@@ -416,7 +440,7 @@ response, perform that document's turn-close audit.
   `find_network_by_entity_id` takes a plain `List[int]` of entity IDs, not the
   `{"ENTITIES": [{"ENTITY_ID": n}]}` document the flags docs and the Java/C# signatures imply —
   passing the document raises `SzSdkError`. So read the signature **for the bootcamper's language**,
-  not the first one returned. Only when `topic='methods'` genuinely does not cover it, fall back to
+  not the first one returned. Only when `topic='parameters'` genuinely does not cover it, fall back to
   **introspecting the installed binding** (`help(...)`, `inspect.signature(...)`,
   `dir(SzEngineFlags)`) — never to another language's example.
 - **Flag families answer different questions.** Confirm what a flag family *selects*, not just
@@ -501,14 +525,28 @@ response, perform that document's turn-close audit.
   *"class MeridianCrmMapper is public, should be declared in a file named MeridianCrmMapper.java"*.
   **Drop `public` from the top-level class.** A package-private top-level class may live in any
   filename, so the prescribed path and the idiomatic class name both survive, and
-  `java -cp <dir> <ClassName>` still launches it unchanged — `main` stays `public static`. Verified
-  on **javac/java 21.0.11, 2026-08-14**: the public form reproduces the error above, the
-  package-private form compiles clean under `javac -Xlint:all`, and the launcher runs.
+  `java -cp <dir> <ClassName>` still launches it unchanged — `main` stays `public static`. This
+  form is for **prescribed standalone program files** (mappers, loaders, verification programs).
+  Verified for a single mapper class on **javac/java 21.0.11, 2026-08-14**: the public form
+  reproduces the error above, the package-private form compiles clean under `javac -Xlint:all`,
+  and the launcher runs.
   - **Do not rename the file, and do not rename the class.** The prescribed filenames are read by
     other machinery (graduation maps artifacts by base name; Module 5 source-qualifies exactly three
     Markdown names; Module 3's build table is pinned by its own tests), and renaming the class to
     `class meridian_crm_mapper` satisfies the compiler while violating the same instruction's
     "idiomatic style for the chosen language".
+  - **(INV-237) A shared class — one that other files reference — goes in a file named after the class**,
+    such as `CounterpartyApi.java`, `public` or not. This covers a shared helper and the JSON
+    reader reused across modules. `javac` resolves a class from the sourcepath **by filename**, so
+    a package-private class in a differently named file draws *"auxiliary class CounterpartyApi …
+    should not be accessed from outside its own source file"* when all files compile together,
+    and *"error: cannot find symbol"* when one program is rebuilt alone with `-sourcepath` — an
+    error that names a missing symbol, not the filename that causes it. Such a helper has no
+    prescribed filename, so "do not rename the file" above, which protects prescribed names, does
+    not apply to it. A class used only inside its own file stays in that file. Verified on
+    **javac 21.0.12.1, 2026-09-25**, with `CounterpartyApi` in `counterparty_api.java`: both
+    failures reproduce, and the same class in `CounterpartyApi.java` compiles clean under
+    `-Xlint:all -sourcepath` and the program runs.
   - **C# is the quiet version of the same thing, and needs the opposite advice.** There the
     file/type correspondence is **conventional, not enforced**: `public class MeridianCrmMapper` in
     `meridian_crm_mapper.cs` builds with **0 warnings, 0 errors** (verified on .NET 8, 2026-08-14).
@@ -579,6 +617,11 @@ the platform's **default** shell — not only in bash. On macOS that shell is **
   closes their terminal and `set -e` leaks into the rest of their session. Use `return`.
 - **Verify the resolved path before using it, and name it when it is wrong.** Silently exporting a
   variable computed from a wrong root is the failure this prevents.
+- **On Windows the shell is PowerShell, so the env script is a `.ps1` the Bootcamper dot-sources:**
+  `. .\src\scripts\senzing-env.ps1`. A `.bat` run from PowerShell sets its variables in a child
+  `cmd.exe`, and none of them reach the session. Module 2 owns the script:
+  [the Windows script](../module-02-sdk-setup/SKILL.md#env-script-windows). Its Windows form is
+  unverified on Windows PowerShell 5.1 here (INV-163).
 
 ## Running a file you just wrote, when the run happens somewhere else
 
@@ -835,16 +878,148 @@ the 👉 protocol above).
 
 ## Module start banners and transitions
 
-At each selected module boundary, show its banner, journey map, before/after framing, numbered step
-overview, and estimated time before doing module work. Read `../../docs/model-selection.md` before
-giving model guidance. A model change is optional and controlled by the bootcamper; never claim to
-have changed it. Use the visible Codex model and reasoning controls when available, and do not
-invent Codex CLI slash commands.
+- **Never show a module number to the bootcamper (INV-079).** In *every* bootcamper-facing line — the module-start banner, the journey map, transition questions, and especially casual acknowledgments such as "Great, moving on to …" — refer to a module by its **name** ("Discover the Business Problem"), never its number ("Module 1"). Module numbers are internal only (skill directory names, prerequisites, section headings, `config/*` keys) and MUST NOT appear in anything the bootcamper reads. When acknowledging a transition, use the next module's **name** — the same name shown in the journey map and the "…next module: {name}?" question.
+- At every module start, BEFORE any module work: read progress, then show the module start
+  banner, a journey map (the **selected** modules — from `selected_modules` in
+  `config/bootcamp_preferences.yaml` — marked by position relative to `current_module`: ✅ for
+  modules already experienced, i.e. those before `current_module` in the list, including
+  apparatus-exempt Bootcamp preparation (never in `modules_completed`) and Module 0 (which, when it
+  runs, IS recorded in `modules_completed` — INV-092);
+  🔄 for the current module; ⬜ for upcoming), before/after
+  framing, and a brief numbered step overview. Never skip these - they orient the bootcamper.
+- **Module selection drives the journey map.** The bootcamp is a sequence of named modules chosen
+  in the **Bootcamp preparation** module (`../bootcamp-preparation/SKILL.md`): **Core** includes
+  every module in order; **Customized** includes the required modules plus whichever optional
+  modules the bootcamper chose. Required modules always run; a deselected optional module is a
+  requested skip (INV-014). The journey map shows exactly the selected modules, in order, by name —
+  not a fixed 1–7 range.
+- **Bootcamp preparation and Module 0 are lightweight setup/preamble modules.** The Bootcamp
+  preparation module (setup + module selection, always first) and the optional entity-resolution
+  concepts primer (`../module-00-entity-resolution-concepts/SKILL.md`, run **only when selected** —
+  its old skip/keep gate is retired; inclusion is driven by the Bootcamp preparation selection,
+  INV-078) do NOT run the module-start apparatus above (no journey map, no before/after, no step
+  overview, no bootcamper-facing end-of-module summary). Keep them lightweight. When Module 0 runs it
+  presents only its ENTITY RESOLUTION CONCEPTS banner, the MCP-sourced description, and its explore
+  gate. **Recap capture differs between the two:** Bootcamp preparation is fully exempt and is never
+  added to `modules_completed`; Module 0, when it runs, DOES append its own name-based recap section
+  and is added to `modules_completed` (INV-092), so it appears in the recap and is reconciled at
+  graduation (INV-085).
+- **Estimated time to complete (INV-096).** After the step overview and before the model/effort
+  prompt, add a short, honest, range-based estimate of how long the module will take — e.g.
+  "⏱️ Roughly 15-30 minutes, depending on download/install speed." Always caveat that it varies
+  with workstation power, business-scenario complexity, data volume, and how much must be
+  downloaded/installed. When a meaningful estimate is not possible for a module, say so plainly
+  ("hard to estimate for this module") rather than inventing a number; keep it honest and
+  range-based, never a single precise figure. It is explanatory output: suppress it entirely under
+  the `minimal` verbosity preset and keep it to one line under `concise` (INV-011/INV-012). This
+  applies only to the numbered content modules that run this apparatus — the apparatus-exempt setup
+  modules (Bootcamp preparation, Module 0) show no estimate.
+- **Best-value model/effort prompt.** This is the authoritative comparison, stage table and
+  switch/confirmation procedure, including graduation (INV-063/069/137/138/236/300).
+  After the overview and estimate, surface the recommendation below. Setup stages are exempt.
 
-Ask at most one 👉 question in a turn. If a model-change question is warranted, it consumes that
-turn's question; resume the module after the bootcamper answers. Checkpoint only work actually
-completed, using the progress rules above. Skip unselected optional modules and preserve the module
-order recorded in the bootcamp preferences.
+  **Unconditional guidance, optional change.** There is no `model_guidance` preference and no
+  guidance-mode question. Ignore stale preferences for it. Keeping one model throughout is valid.
+  This is the only host-level setting offered as a bootcamp question (INV-247); do not add
+  permission, auto-accept, plan-mode or other interface-setting gates.
+
+  **Resolve roles first:** use `../../docs/model-selection.md` to resolve each role to one
+  concrete available model using reliable current host information. Retain those resolved values;
+  never infer your current model from your identity or a name in a file. No time-sensitive model
+  name, price, context-window claim or invented host command belongs in this table.
+
+  **Compare model and effort separately against live settings**, using the most recent reliable
+  host information or explicit user report of the value actually selected. A bare "yes"/"done"
+  does not expose a hidden setting. A readable model is compared even when effort is unreadable,
+  and vice versa. **Only for an unreadable dial**, fall back to that dial's resolved recommendation
+  in the stage just completed. With no such evidence, disclose the unknown; do not invent a match,
+  mismatch or supported setting. Never compare recommendation to recommendation for a readable
+  dial: a flat sequence would hide the offer from a user actually running another model.
+
+  **Above the entire table is satisfied, per dial.** Reliably identified effort above every
+  `high` row, or a reliably identified model above every resolved recommendation, earns a
+  statement that staying higher is fine, not another downgrade offer at every stage. Never infer
+  capability order from names. An in-table high-to-medium step down still earns the same optional
+  choice as a step up; this exemption is not a blanket ban on step-down offers.
+
+  **No dial differs:** give a one-line statement naming the recommendation's model and effort
+  separately, ask no switch question, and continue automatic work to the next defined 👉.
+  Mention user-controlled changes can apply to later messages. An unavailable comparison is not
+  a claimed match.
+
+  **A dial differs:** name only the moving dial, including the answer hint. Pin the appropriate
+  question below, substituting the resolved value(s), `{stage}` ("this module" or "graduation"),
+  and `{step-down clause}` (empty unless a known in-table step down):
+
+  > 👉 **Would you like to switch to {model} at {effort} reasoning effort for {stage}?{step-down clause}** (Recommended for best value; reply no to keep your current model and effort.)
+
+  > 👉 **Would you like to switch to {model} for {stage}?{step-down clause}** (Recommended for best value; reply no to keep your current model.)
+
+  > 👉 **Would you like to switch to {effort} reasoning effort for {stage}?{step-down clause}** (Recommended for best value; reply no to keep your current effort.)
+
+  The pinned step-down clause is: " This is a step down from your current {current}; it is about
+  resource use, not a capability the stage requires, so staying put is fine." Make no unsupported
+  price claim. An effort-only offer never tells the user to reset the model.
+  Name the known Codex interface's supported controls before the question when needed; use intent,
+  not invented labels or commands. The offer is this turn's only question; do not show Step 1 yet.
+
+  **On no:** acknowledge and execute the first step in the same reply turn, continuing through
+  non-yielding steps to the next skill-defined 👉. A privacy reminder/status is not a turn ending.
+
+  **On yes:** re-read reliable setting evidence before replying. The user may have acted already,
+  so the live setting, not the yes alone, decides these three branches:
+
+  1. **Not yet set or still unobservable:** give one short supported-control instruction naming
+     only the moving dial, then end on this pinned wait gate; do not start stage work yet:
+
+     > 👉 **Are you done modifying the model and effort?** (Reply yes once you've set your model and effort; reply no if you need more time.)
+
+     On confirmation, continue into the first step. On no/"not yet", acknowledge and wait for
+     their go-ahead without re-asking the gate (INV-006). A bare confirmation does not make a
+     hidden value observed.
+  2. **Already at the recommendation:** acknowledge the actual setting and continue in the same
+     turn, with no confirmation gate. Nothing remains to confirm.
+  3. **Already deliberately set to another value:** name what is in force, honor it and continue
+     in the same turn without re-instructing the recommendation or adding a confirmation gate.
+     Running higher is fine; a recommended floor is not a ceiling.
+
+  Branches 2 and 3 skip the done gate; branch 1 keeps it. Only the bootcamper can change settings.
+  Never confuse an accepted offer with a performed switch or repeat a settled confirmation.
+
+  **One row per stage, in journey order.** This is the authoritative table; the host adaptation
+  resolves its roles and must not maintain a second table. Each row has one model and effort role.
+
+  | Stage | Model role | Reasoning effort |
+  |---|---|---|
+  | Onboarding | balanced | medium |
+  | Bootcamp preparation | balanced | medium |
+  | Entity Resolution Concepts | balanced | medium |
+  | Discover the Business Problem | balanced | medium |
+  | SDK setup | high-capability | high |
+  | System verification | balanced | high |
+  | Truth Set visualization | high-capability | high |
+  | Data collection | balanced | medium |
+  | Data Quality, Mapping, and Transformation | high-capability | high |
+  | Data processing | high-capability | high |
+  | Query, Visualize and Discover | high-capability | high |
+  | Bootcamp graduation | high-capability | high |
+
+  The first three rows are comparison-only: apparatus-exempt setup stages never present the
+  nudge (INV-075/078). From Data Quality, Mapping, and Transformation onward recommendations are
+  flat, so a user already there receives no new offer. Effort targets are floors, not ceilings.
+
+- **Module start banner:** name only the module, never its internal number:
+
+  ```text
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🚀🚀🚀  MODULE: [MODULE NAME IN CAPS]  🚀🚀🚀
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ```
+
+- After an affirmative transition, run the next selected module's apparatus immediately.
+  Its comparison decides whether to end on the switch offer or continue into the first step.
+  Follow the three reply branches above rather than always asking the done gate. Checkpoint
+  completed work only, preserve the selected sequence, and end on the next defined question.
 
 ## Closing questions
 
